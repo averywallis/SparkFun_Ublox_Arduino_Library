@@ -79,15 +79,27 @@ boolean SFE_UBLOX_GPS::begin(Stream &serialPort)
 
 //Enable or disable the printing of sent/response HEX values.
 //Use this in conjunction with 'Transport Logging' from the Universal Reader Assistant to see what they're doing that we're not
-void SFE_UBLOX_GPS::enableDebugging(Stream &debugPort)
+void SFE_UBLOX_GPS::enableDebugging(Stream &debugPort, uint8_t triggerPin)
 {
   _debugSerial = &debugPort; //Grab which port the user wants us to use for debugging
 
   _printDebug = true; //Should we print the commands we send? Good for debugging
+
+  _triggerPin = triggerPin;
+  if (_triggerPin != 255)
+  {
+    pinMode(_triggerPin, OUTPUT);
+    digitalWrite(_triggerPin, HIGH); //Start high. Go low when CRC is bad.
+  }
 }
 void SFE_UBLOX_GPS::disableDebugging(void)
 {
   _printDebug = false; //Turn off extra print statements
+
+  if (_triggerPin != 255)
+  {
+    pinMode(_triggerPin, INPUT);
+  }
 }
 
 //Safely print messages
@@ -530,9 +542,12 @@ void SFE_UBLOX_GPS::processUBX(uint8_t incoming, ubxPacket *incomingUBX)
         debugPrintln((char *)"Checksum failed. Response too big?");
 
         //Drive an external pin to allow for easier logic analyzation
-        digitalWrite(2, LOW);
-        delay(10);
-        digitalWrite(2, HIGH);
+        if (_triggerPin != 255)
+        {
+          digitalWrite(_triggerPin, LOW);
+          delay(10);
+          digitalWrite(_triggerPin, HIGH);
+        }
 
         _debugSerial->print("Size: ");
         _debugSerial->print(incomingUBX->len);

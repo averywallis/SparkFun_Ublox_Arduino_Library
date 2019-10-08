@@ -319,10 +319,10 @@ public:
 
 	boolean getRELPOSNED(uint16_t maxWait = 1000); //Get Relative Positioning Information of the NED frame
 
-	void enableDebugging(Stream &debugPort = Serial); //Given a port to print to, enable debug messages
-	void disableDebugging(void);					  //Turn off debug statements
-	void debugPrint(char *message);					  //Safely print debug statements
-	void debugPrintln(char *message);				  //Safely print debug statements
+	void enableDebugging(Stream &debugPort = Serial, uint8_t triggerPin = 255); //Given a port to print to, enable debug messages. Setup trigger pin for logic analyzer.
+	void disableDebugging(void);												//Turn off debug statements
+	void debugPrint(char *message);												//Safely print debug statements
+	void debugPrintln(char *message);											//Safely print debug statements
 
 	//Survey-in specific controls
 	struct svinStructure
@@ -438,6 +438,7 @@ private:
 	//This can be changed using the ublox configuration software
 
 	boolean _printDebug = false; //Flag to print the serial commands we are sending to the Serial port for debug
+	uint8_t _triggerPin;		 //This GPIO goes low to indicate when CRC has failed
 
 	//These are pointed at from within the ubxPacket
 	uint8_t payloadAck[2];
